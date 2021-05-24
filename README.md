@@ -18,3 +18,7 @@ It demonstrates how a webcam can be shared between two browsers. It shows what a
 After that you should see the shared webcam in Browser B.
 
 Make sure that both browsers can talk to each other directly.
+
+## Try It Out
+
+Try it out at [GitHub Pages](https://steschu77.github.io/webrtc-simple/)
