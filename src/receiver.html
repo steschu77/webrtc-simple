@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="container">
+  <video id="remote" playsinline autoplay muted></video>
+  <textarea id="remoteOffer" cols="60" rows="10"></textarea>
+  <button type="button" onclick="applyOffer()">Offer</button>
+  <textarea id="localAnswer" cols="60" rows="10"></textarea>
+  <button type="button" onclick="copyText(txtLocalAnswer)">Answer</button>
+  <textarea id="localICE" cols="60" rows="10"></textarea>
+  <button type="button" onclick="copyText(txtLocalICE)">ICE</button>
+</div>
+      
+<script async>
+  const remote = document.getElementById('remote');
+  const txtRemoteOffer = document.getElementById("remoteOffer");
+  const txtLocalAnswer = document.getElementById("localAnswer");
+  const txtLocalICE = document.getElementById("localICE");
+  var localCandidates = [];
+  var pc;
+  
+  start();
+  
+  async function start() {
+  
+    const configuration = {};
+    pc = new RTCPeerConnection(configuration);
+
+    pc.addEventListener('track', gotRemoteStream);
+    
+    pc.onicecandidate = ({ candidate }) => {
+      localCandidates = [...localCandidates, candidate];
+      txtLocalICE.value = JSON.stringify(localCandidates);
+    };
+  }
+  
+  function gotRemoteStream(e) {
+    remote.srcObject = e.streams[0];
+  }
+
+  async function applyOffer() {
+    const sdp = txtRemoteOffer.value;
+    const offer = { type: 'offer', sdp };
+    await pc.setRemoteDescription(offer);
+    const answer = await pc.createAnswer();
+    txtLocalAnswer.value = answer.sdp;
+    await pc.setLocalDescription(answer);
+  }
+
+  function copyText(txt) {
+    txt.select();
+    document.execCommand("copy");
+  }  
+</script>
+
+</body>
+</html>

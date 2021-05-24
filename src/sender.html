@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="container">
+  <video id="local" playsinline autoplay muted></video>
+  <textarea id="localOffer" cols="60" rows="10"></textarea>
+  <button type="button" onclick="copyText(txtLocalOffer)">Offer</button>
+  <textarea id="remoteAnswer" cols="60" rows="10"></textarea>
+  <button type="button" onclick="applyAnswer()">Answer</button>
+  <textarea id="remoteICE" cols="60" rows="10"></textarea>
+  <button type="button" onclick="applyICE()">ICE</button>
+</div>
+
+<script async>
+  const local = document.getElementById('local');
+  const txtLocalOffer = document.getElementById("localOffer");
+  const txtRemoteAnswer = document.getElementById("remoteAnswer");
+  const txtRemoteICE = document.getElementById("remoteICE");
+  var localCandidates = [];
+  var pc;
+  
+  start();
+  
+  async function start() {
+    const stream = await navigator.mediaDevices.getUserMedia({video: true});
+    local.srcObject = stream;
+  
+    const configuration = {};
+    pc = new RTCPeerConnection(configuration);
+  
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+  
+    const offer = await pc.createOffer({ offerToReceiveVideo: 1 });
+    txtLocalOffer.value = offer.sdp;
+    await pc.setLocalDescription(offer);
+  }
+
+  async function applyAnswer() {
+    const sdp = txtRemoteAnswer.value;
+    const answer = { type: 'answer', sdp };
+    await pc.setRemoteDescription(answer);
+  }
+
+  function applyICE() {
+    const remoteICE = parseJSON(txtRemoteICE.value);
+    remoteICE.forEach(c => {
+      pc.addIceCandidate(c);
+    });
+  }
+  
+  function copyText(txt) {
+    txt.select();
+    document.execCommand("copy");
+  }  
+
+  function parseJSON(str) {
+    try {
+      return JSON.parse(str);
+    } catch (parseError) {
+      return [];
+    }
+  }
+</script>
+  
+</body>
+</html>
